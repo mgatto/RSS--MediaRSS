@@ -7,7 +7,9 @@ use File::Next;
 use File::Basename;
 use MP4::Info;
 use XML::RSS;
-use Data::Dumper;
+use URI;
+#use Data::Dumper;
+use Params::Validate qw(:all);
 
 =head1 NAME
 
@@ -36,7 +38,7 @@ Perhaps a little code snippet.
 
 =head1 EXPORT
 
-toMediaRSS
+as_string as_file
 
 =head1 SUBROUTINES/METHODS
 
@@ -79,26 +81,36 @@ sub BUILD {
         link        => '',
         description => '',
     });
-    $mrss = $rss->toMediaRSS('/srv/www/example.com/public/videos', 'http://www.example.com/video');
+    $mrss = $rss->as_string('/srv/www/example.com/public/videos', 'http://www.example.com/video');
     $rss->as_file('/srv/www/example.com/public/videos/myvideos.rss');
 =cut
 sub as_string {
     my $self = shift;
-
-    my $root_video_directory = shift;
-    my $base_url = shift;
+    my %params = validate(
+        @_, {
+            video_root =>
+                # specify a type
+                { type => SCALAR },
+            base_url =>
+                # specify a type
+                { type => SCALAR },
+            filter => {
+                type      => ARRAYREF,     # [mp4 webm mpeg] etc...
+                optional => 1,
+            },
+        }
+    );
 
     $self->start_feed;
 
     # need to use everything() instead of file()
-    my $files = File::Next::files( { file_filter => sub { /\.mp4$/ } }, $root_video_directory );
+    my $files = File::Next::files( { file_filter => sub { /\.mp4$/ } }, $params{'video_root'} );
     while ( defined ( my $file = $files->() ) ) {
-       $self->add_media_item_to_feed( $file );
+       $self->add_media_item_to_feed({
+           path => $file,
+           link => $params{'base_url'}
+       });
     }
-
-    #my @directories = ($root_video_directory);
-    # can replace with File::Find::Object or File::Next
-    #find({ wanted => \&add_media_item_to_feed, follow => 1 }, @directories);
 
     # return the rss as a string
     return $self->rss_writer->as_string;
@@ -108,7 +120,11 @@ sub as_string {
 
 =cut
 sub as_file {
+    #get the Object first
     my $self = shift;
+
+    # make sure its valid-ish...
+    my %params = validate_pos(@_, { type => SCALAR });
 
     my $full_file_path = shift;
     $self->rss_writer->save($full_file_path);
@@ -137,22 +153,32 @@ sub start_feed {
 
 sub add_media_item_to_feed {
     my $self = shift;
-    my $full_file_path = shift;
+    my %params = validate(
+        @_, {
+            path =>
+                # specify a type
+                { type => SCALAR },
+            link =>
+                # specify a type
+                { type => SCALAR },
+        }
+    );
 
-    my $info = get_mp4info($full_file_path);
-
-    my $title = basename($full_file_path);
+    my $info = get_mp4info($params{'path'});
+    my $title = basename($params{'path'});
     #
     $title =~ s/-(\w)/ \u\L$1/g;
     $title =~ s/\.[^.]+$//;
     #$title = Lingua::EN::Titlecase->new($title);
 
+    my $uri = URI->new($params{'link'});
+
     $self->rss_writer->add_item(
         title => ucfirst($title),
-        link => $self->link,
+        link => $params{'link'} . basename($params{'path'}),
         media => {
             content      => {
-                url         => $self->link . '/' . basename($full_file_path),
+                url         => $self->link . '/' . basename($params{'path'}),
                 duration    => "$info->{SECS}",
                 size        => "$info->{SIZE}",
                 #need to get the stream to get the language...
@@ -160,9 +186,9 @@ sub add_media_item_to_feed {
             },
             title        => ucfirst($title),
             #can we look for a text file? or extract from file metadata?
-            description  => "",
+            description  => "", # comments tag
             player       => {
-                url => $self->player_url . "?file=" . basename($full_file_path)
+                url => $self->player_url . "?file="  . $uri->path . basename($params{'path'})
             }#,
             #thumbnail    => {
             #    url => "http://jamesacook.net/assets/images/"
