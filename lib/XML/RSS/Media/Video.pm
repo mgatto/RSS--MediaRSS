@@ -2,13 +2,13 @@ package XML::RSS::Media::Video;
 
 use Modern::Perl;
 use Moo;
-#use File::Find;
+use Lingua::EN::Titlecase::Simple qw(titlecase);
 use File::Next;
 use File::Basename;
 use MP4::Info;
 use XML::RSS;
 use URI;
-#use Data::Dumper;
+use Data::Dumper;
 use Params::Validate qw(:all);
 
 =head1 NAME
@@ -41,6 +41,9 @@ Perhaps a little code snippet.
 as_string as_file
 
 =head1 SUBROUTINES/METHODS
+
+This will not work well if the file names are one long string without hyphens or underscores.
+
 
 =cut
 
@@ -166,11 +169,17 @@ sub add_media_item_to_feed {
 
     my $info = get_mp4info($params{'path'});
     my $title = basename($params{'path'});
-    #
-    $title =~ s/-(\w)/ \u\L$1/g;
-    $title =~ s/\.[^.]+$//;
-    #$title = Lingua::EN::Titlecase->new($title);
 
+    #strip the extension and punctuation
+    $title =~ s/\.[^.]+$//;
+    $title =~ s/[^\w\d]/ /g;
+print Dumper($title);
+    # title case it
+    #$title =~ s/-(\w)/ \u\L$1/g;
+print Dumper($title);
+    #my $titlecaser = Lingua::EN::Titlecase->new();
+    #$titlecaser->mixed_threshold('0.50');
+print Dumper(titlecase($title));die;
     my $uri = URI->new($params{'link'});
 
     $self->rss_writer->add_item(
