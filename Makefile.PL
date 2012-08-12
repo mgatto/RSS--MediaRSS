@@ -4,10 +4,10 @@ use warnings;
 use ExtUtils::MakeMaker;
 
 WriteMakefile(
-    NAME                => 'XML::RSS::MRSS::Video',
+    NAME                => 'XML::RSS::Media::Video',
     AUTHOR              => q{Michael Gatto <mgatto@lisantra.com>},
-    VERSION_FROM        => 'lib/XML/RSS/MRSS/Video.pm',
-    ABSTRACT_FROM       => 'lib/XML/RSS/MRSS/Video.pm',
+    VERSION_FROM        => 'lib/XML/RSS/Media/Video.pm',
+    ABSTRACT_FROM       => 'lib/XML/RSS/Media/Video.pm',
     ($ExtUtils::MakeMaker::VERSION >= 6.3002
       ? ('LICENSE'=> 'perl')
       : ()),
@@ -16,5 +16,5 @@ WriteMakefile(
         'Test::More' => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
-    clean               => { FILES => 'XML--RSS--MRSS--Video-*' },
+    clean               => { FILES => 'XML--RSS--Media--Video-*' },
 );

@@ -1,4 +1,4 @@
-package XML::RSS::MRSS::Video;
+package XML::RSS::Media::Video;
 
 use Modern::Perl;
 use Moo;
@@ -11,7 +11,7 @@ use Data::Dumper;
 
 =head1 NAME
 
-XML::RSS::MRSS::Video - Creates a Media RSS file by recursing from a root directory.
+XML::RSS::Media::Video - Creates a Media RSS file by recursing from a root directory.
 
 =head1 VERSION
 
@@ -21,7 +21,7 @@ Version 0.01
 
 our $VERSION = '0.01';
 
-our @EXPORT = qw(toMediaRSS);
+our @EXPORT = qw(as_string as_file);
 
 =head1 SYNOPSIS
 
@@ -29,9 +29,9 @@ Quick summary of what the module does.
 
 Perhaps a little code snippet.
 
-    use XML::RSS::MRSS::Video;
+    use XML::RSS::Media::Video;
 
-    my $foo = XML::RSS::MRSS::Video->new();
+    my $foo = XML::RSS::Media::Video->new();
     ...
 
 =head1 EXPORT
@@ -65,8 +65,15 @@ has rss_writer => (
     }
 );
 
-=head2 toMediaRSS
-    $rss = XML::RSS::MRSS::Video->new({
+=head2 BUILD
+
+=cut
+sub BUILD {
+
+}
+
+=head2 as_string
+    $rss = XML::RSS::Media::Video->new({
         player_url  => 'http://www.example.com/videos/player.swf',
         title       => '',
         link        => '',
@@ -75,7 +82,7 @@ has rss_writer => (
     $mrss = $rss->toMediaRSS('/srv/www/example.com/public/videos', 'http://www.example.com/video');
     $rss->as_file('/srv/www/example.com/public/videos/myvideos.rss');
 =cut
-sub toMediaRSS {
+sub as_string {
     my $self = shift;
 
     my $root_video_directory = shift;
@@ -97,12 +104,15 @@ sub toMediaRSS {
     return $self->rss_writer->as_string;
 };
 
-=head2 BUILD
+=head2 as_file
 
 =cut
-sub BUILD {
+sub as_file {
+    my $self = shift;
 
-}
+    my $full_file_path = shift;
+    $self->rss_writer->save($full_file_path);
+};
 
 =head2 start_feed
 
@@ -124,6 +134,7 @@ sub start_feed {
     $File::Find::name is the full path
 
 =cut
+
 sub add_media_item_to_feed {
     my $self = shift;
     my $full_file_path = shift;
@@ -160,14 +171,6 @@ sub add_media_item_to_feed {
     );
 };
 
-sub as_file {
-    my $self = shift;
-
-    my $full_file_path = shift;
-    $self->rss_writer->save($full_file_path);
-};
-
-
 # sub make_thumbnail {};
 
 =head1 AUTHOR
@@ -187,7 +190,7 @@ automatically be notified of progress on your bug as I make changes.
 
 You can find documentation for this module with the perldoc command.
 
-    perldoc XML::RSS::MRSS::Video
+    perldoc XML::RSS::Media::Video
 
 
 You can also look for information at:
@@ -229,4 +232,4 @@ See http://dev.perl.org/licenses/ for more information.
 
 =cut
 
-1; # End of XML::RSS::MRSS::Video
+1; # End of XML::RSS::Media::Video

@@ -16,31 +16,31 @@ INSTALLATION
 
 To install this module, run the following commands:
 
-	perl Makefile.PL
-	make
-	make test
-	make install
+    perl Makefile.PL
+    make
+    make test
+    make install
 
 SUPPORT AND DOCUMENTATION
 
 After installing, you can find documentation for this module with the
 perldoc command.
 
-    perldoc XML::RSS::MRSS::Video
+    perldoc XML::RSS::Media::Video
 
 You can also look for information at:
 
     RT, CPAN's request tracker (report bugs here)
-        http://rt.cpan.org/NoAuth/Bugs.html?Dist=XML--RSS--MRSS--Video
+        http://rt.cpan.org/NoAuth/Bugs.html?Dist=XML--RSS--Media--Video
 
     AnnoCPAN, Annotated CPAN documentation
-        http://annocpan.org/dist/XML--RSS--MRSS--Video
+        http://annocpan.org/dist/XML--RSS--Media--Video
 
     CPAN Ratings
-        http://cpanratings.perl.org/d/XML--RSS--MRSS--Video
+        http://cpanratings.perl.org/d/XML--RSS--Media--Video
 
     Search CPAN
-        http://search.cpan.org/dist/XML--RSS--MRSS--Video/
+        http://search.cpan.org/dist/XML--RSS--Media--Video/
 
 
 LICENSE AND COPYRIGHT
