@@ -3,11 +3,8 @@ Code Status
 
 This code is pretty alpha. 
 
-The existing script only handles mp4 videos. There is lots of work to be done to make this code reusable and handle more video formats.
-
 To Do
 -----
-* Package it with Carton so dependencies are added to this repository and not require manual CPAN installs before this can be used.
-* Make it a perl module?
+
 * Consider using Image::ExifTool to read MP4,OGV,WEBM.
-    * But, what about WMV?
+    ~ But, what about WMV?
