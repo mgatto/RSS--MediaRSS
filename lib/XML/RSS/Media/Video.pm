@@ -5,11 +5,17 @@ use Moo;
 use Lingua::EN::Titlecase::Simple qw(titlecase);
 use File::Next;
 use File::Basename;
-use MP4::Info;
 use XML::RSS;
 use URI;
 use Data::Dumper;
+use Image::ExifTool qw(:Public);
 use Params::Validate qw(:all);
+use Exception::Class(
+    'Example::Module::X::Args' => { alias => 'throw_args', },
+);
+Params::Validate::validation_options(
+    on_fail => sub { throw_args(error => shift) },
+);
 
 =head1 NAME
 
@@ -23,7 +29,7 @@ Version 0.01
 
 our $VERSION = '0.01';
 
-our @EXPORT = qw(as_string as_file);
+our @EXPORT = qw(new as_string as_file);
 
 =head1 SYNOPSIS
 
@@ -43,6 +49,8 @@ as_string as_file
 =head1 SUBROUTINES/METHODS
 
 This will not work well if the file names are one long string without hyphens or underscores.
+
+Spaces in filenames don't work well as served files, either.
 
 
 =cut
@@ -66,7 +74,7 @@ has description => (
 has rss_writer => (
     is => 'ro',
     default => sub {
-        return XML::RSS->new (version => '2.0');
+        return XML::RSS->new(version => '2.0');
     }
 );
 
@@ -107,7 +115,7 @@ sub as_string {
     $self->start_feed;
 
     # need to use everything() instead of file()
-    my $files = File::Next::files( { file_filter => sub { /\.mp4$/ } }, $params{'video_root'} );
+    my $files = File::Next::files( { file_filter => sub { /\.webm$/ } }, $params{'video_root'} );
     while ( defined ( my $file = $files->() ) ) {
        $self->add_media_item_to_feed({
            path => $file,
@@ -156,6 +164,7 @@ sub start_feed {
 
 sub add_media_item_to_feed {
     my $self = shift;
+
     my %params = validate(
         @_, {
             path =>
@@ -167,19 +176,23 @@ sub add_media_item_to_feed {
         }
     );
 
-    my $info = get_mp4info($params{'path'});
+    my $info = ImageInfo($params{'path'});
+
+    #is there a plain Englis title in the embedded metadata?
     my $title = basename($params{'path'});
+    if ( exists $$info{'Title'}  ) { # Title = mp4
+        my  $title = $$info{'Title'};
+    }
+
+    # $info{'comments'} = theora
 
     #strip the extension and punctuation
     $title =~ s/\.[^.]+$//;
     $title =~ s/[^\w\d]/ /g;
-print Dumper($title);
     # title case it
-    #$title =~ s/-(\w)/ \u\L$1/g;
-print Dumper($title);
-    #my $titlecaser = Lingua::EN::Titlecase->new();
-    #$titlecaser->mixed_threshold('0.50');
-print Dumper(titlecase($title));die;
+
+    $title = titlecase($title);
+
     my $uri = URI->new($params{'link'});
 
     $self->rss_writer->add_item(
@@ -188,14 +201,14 @@ print Dumper(titlecase($title));die;
         media => {
             content      => {
                 url         => $self->link . '/' . basename($params{'path'}),
-                duration    => "$info->{SECS}",
-                size        => "$info->{SIZE}",
+                duration    => "$$info{'Duration'}", # = mp4
+                size        => "$$info{'FileSize'}", # = mp4
                 #need to get the stream to get the language...
                 lang        => "en",
             },
             title        => ucfirst($title),
             #can we look for a text file? or extract from file metadata?
-            description  => "", # comments tag
+            description  => "", # comments tag; Description = mp4
             player       => {
                 url => $self->player_url . "?file="  . $uri->path . basename($params{'path'})
             }#,

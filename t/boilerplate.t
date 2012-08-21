@@ -49,7 +49,7 @@ TODO: {
     "placeholder date/time"       => qr(Date/time)
   );
 
-  module_boilerplate_ok('lib/XML/RSS/MRSS/Video.pm');
+  module_boilerplate_ok('lib/XML/RSS/Media/Video.pm');
 
 
 }
